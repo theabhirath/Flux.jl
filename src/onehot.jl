@@ -159,7 +159,25 @@ onecold(y::OneHotLike) = _isonehot(y) ? _indices(y) :
                             onecold(convert(_onehot_bool_type(y), y))
 
 onecold(y::AbstractVector, labels) = labels[onecold(y)]
-onecold(y::AbstractArray, labels) = map(c -> labels[c], onecold(y))
+onecold(y::AbstractArray, labels) = _onecold(onecold(y), labels)
+
+# function onecold(y::CuArray, labels)
+#   indices = onecold(y)
+#   indices isa CuArray && !all(isbits, labels)  && 
+#     throw(ArgumentError("Only `all(isbits, labels)` allowed on gpu")) 
+#   @show indices gpu(labels)
+#   return _onecold(indices, gpu(labels))
+# end
+
+function _onecold(indices::CuArray, labels)
+  all(isbits, labels) || 
+    throw(ArgumentError("Only `all(isbits, labels)` allowed on gpu")) 
+  l = cu(collect(labels))
+  return reshape(l[vec(indices)], size(indices))
+end
+
+# _onecold(indices::AbstractArray, labels) = map(c -> labels[c], indices)
+_onecold(indices::AbstractArray, labels) = reshape(labels[vec(indices)], size(indices))
 
 @nograd OneHotArray, onecold, onehot, onehotbatch
 

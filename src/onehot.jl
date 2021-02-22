@@ -24,6 +24,7 @@ const OneHotLike{T, L, N, var"N+1", I} =
   Union{OneHotArray{T, L, N, var"N+1", I},
         Base.ReshapedArray{Bool, var"N+1", <:OneHotArray{T, L, <:Any, <:Any, I}}}
 
+
 _isonehot(x::OneHotArray) = true
 _isonehot(x::Base.ReshapedArray{<:Any, <:Any, <:OneHotArray{<:Any, L}}) where L = (size(x, 1) == L)
 
@@ -120,9 +121,9 @@ julia> Flux.onehotbatch([:b, :a, :b], [:a, :b, :c])
 onehotbatch(ls, labels, unk...) = batch([onehot(l, labels, unk...) for l in ls])
 
 """
-    onecold(y[, labels = 1:length(y)])
+    onecold(y, labels = 1:size(y,1))
 
-Inverse operations of [`onehot`](@ref).
+Inverse operations of [`onehot`](@ref). Similar to `argmax(y, dims=1)`.
 
 # Examples
 ```jldoctest
@@ -131,24 +132,33 @@ julia> Flux.onecold([true, false, false], [:a, :b, :c])
 
 julia> Flux.onecold([0.3, 0.2, 0.5], [:a, :b, :c])
 :c
+
+julia> y = Flux.onehotbatch([1,3,2,1,3], 1:3)
+3×5 OneHotArray{UInt32, 3, 1, 2, Vector{UInt32}}:
+ 1  0  0  1  0
+ 0  0  1  0  0
+ 0  1  0  0  1
+
+julia> Flux.onecold(y)
+5-element Vector{Int64}:
+ 1
+ 3
+ 2
+ 1
+ 3
 ```
 """
-onecold(y::AbstractVector, labels = 1:length(y)) = labels[argmax(y)]
-function onecold(y::AbstractArray, labels = 1:size(y, 1))
-  indices = _fast_argmax(y)
-  xs = isbits(labels) ? indices : collect(indices) # non-bit type cannot be handled by CUDA
-
-  return map(xi -> labels[xi[1]], xs)
+function onecold(y::AbstractArray) 
+  x = dropdims(argmax(y; dims = 1); dims = 1)
+  # convert from CartesianIndex
+  return map(c -> c[1], x)
 end
+onecold(y::OneHotArray) = _indices(y)
+onecold(y::OneHotLike) = _isonehot(y) ? _indices(y) : 
+                            onecold(convert(_onehot_bool_type(y), y))
 
-_fast_argmax(x::AbstractArray) = dropdims(argmax(x; dims = 1); dims = 1)
-function _fast_argmax(x::OneHotLike)
-  if _isonehot(x)
-    return _indices(x)
-  else
-    return _fast_argmax(convert(_onehot_bool_type(x), x))
-  end
-end
+onecold(y::AbstractVector, labels) = labels[onecold(y)]
+onecold(y::AbstractArray, labels) = map(c -> labels[c], onecold(y))
 
 @nograd OneHotArray, onecold, onehot, onehotbatch
 

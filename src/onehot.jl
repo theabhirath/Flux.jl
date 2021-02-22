@@ -24,7 +24,6 @@ const OneHotLike{T, L, N, var"N+1", I} =
   Union{OneHotArray{T, L, N, var"N+1", I},
         Base.ReshapedArray{Bool, var"N+1", <:OneHotArray{T, L, <:Any, <:Any, I}}}
 
-
 _isonehot(x::OneHotArray) = true
 _isonehot(x::Base.ReshapedArray{<:Any, <:Any, <:OneHotArray{<:Any, L}}) where L = (size(x, 1) == L)
 
@@ -148,6 +147,8 @@ julia> Flux.onecold(y)
  3
 ```
 """
+onecold(y::AbstractVector) = argmax(y) 
+
 function onecold(y::AbstractArray) 
   x = dropdims(argmax(y; dims = 1); dims = 1)
   # convert from CartesianIndex

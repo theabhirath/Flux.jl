@@ -95,6 +95,14 @@ version = "3.32.0"
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 
+[[ComponentArrays]]
+deps = ["ArrayInterface", "ChainRulesCore", "LinearAlgebra", "Requires"]
+git-tree-sha1 = "0d232dfb685557a7c7ef5eb7b641b93554fdc3cd"
+repo-rev = "dg/cr"
+repo-url = "https://github.com/DhairyaLGandhi/ComponentArrays.jl.git"
+uuid = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
+version = "0.11.1"
+
 [[DataAPI]]
 git-tree-sha1 = "ee400abb2298bd13bfc3df1c412ed228061a2385"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
@@ -291,7 +299,7 @@ uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 [[NNlib]]
 deps = ["Adapt", "ChainRulesCore", "Compat", "LinearAlgebra", "Pkg", "Requires", "Statistics"]
 git-tree-sha1 = "16520143f067928bb69eee59ac8bca06be1e43b8"
-repo-rev = "dg/cr"
+repo-rev = "master"
 repo-url = "https://github.com/FluxML/NNlib.jl.git"
 uuid = "872c559c-99b0-510c-b3b7-b6c96a88d5cd"
 version = "0.7.27"
